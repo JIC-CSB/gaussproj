@@ -1,10 +1,10 @@
 #!/usr/bin/env python2.7
 
-import numpy as np
-import itertools
+import itertools, sys
 import scipy
 import scipy.ndimage as nd
-import sys
+import numpy as np
+import stackhandle
 
 def numpy_draw_pyplot(r):
     plt.imshow(r, interpolation='nearest')
@@ -50,6 +50,9 @@ def find_projection_surface(bl):
     print " done"
     return surface
 
+def vavg(ma, x, y, z):
+    return 0.25 * sum(ma[x, y, z-3:z])
+
 def projection_from_surface(ma, surface):
     flush_message("Generating projection from surface...")
     xmax, ymax, zmax = ma.shape
@@ -57,7 +60,8 @@ def projection_from_surface(ma, surface):
     for x in range(0, xmax):
         for y in range(0, ymax):
             z = surface[x, y]
-            res[x, y] = ma[x, y, z]
+            res[x, y] = vavg(ma, x, y, z)
+            #res[x, y] = ma[x, y, z]
     print " done"
     return res
 
@@ -66,28 +70,39 @@ def save_numpy_as_png(filename, np):
 
 def main():
 
-    impattern = 'data/pngstack/ExpID3002_spch4_TL003_plantD_lif_S000_T000_C000_Z0%02d.png'
-    istart = 6
-    iend = 92
+    try:
+        stackdir = sys.argv[1]
+    except IndexError:
+        print "Usage: %s stack_dir [sdx] [sdy] [sdz]"
+        sys.exit(1)
+
+    imgpattern, istart, iend = stackhandle.get_stack_pattern(stackdir)
+
+    #impattern = 'data/pngstack/ExpID3002_spch4_TL003_plantD_lif_S000_T000_C000_Z0%02d.png'
+    #istart = 0
+    #iend = 92
 
     try:
-        sdx, sdy, sdz = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
+        sdx, sdy, sdz = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
     except IndexError:
         print "Using default values for standard deviation"
-        sdx, sdy, sdz = 25, 25, 7
+        sdx, sdy, sdz = 8, 8, 6
+
+    sds = 10
 
     print "Using standard deviations: %d, %d, %d" % (sdx, sdy, sdz)
 
-    ma = load_png_stack(impattern, istart, iend)
+    ma = load_png_stack(imgpattern, istart, iend)
 
     bl = apply_gaussian_filter(ma, [sdx, sdy, sdz])
 
     ps = find_projection_surface(bl)
-    sfilename = "output/surface-g3d-%d-%d-%d.png" % (sdx, sdy, sdz)
-    save_numpy_as_png(sfilename, ps)
+    sps = nd.gaussian_filter(ps, sds)
+    sfilename = "output/surface-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds)
+    save_numpy_as_png(sfilename, sps)
 
-    res = projection_from_surface(ma, ps)
-    filename = "output/proj-g3d-%d-%d-%d.png" % (sdx, sdy, sdz)
+    res = projection_from_surface(ma, sps)
+    filename = "output/proj-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds)
     scipy.misc.imsave(filename, res)
 
     #numpy_draw_pil(res)
