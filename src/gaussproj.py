@@ -17,6 +17,14 @@ def numpy_draw_pil(r):
 
 def read_and_conv(filename):
     na = scipy.misc.imread(filename)
+
+    #TODO - nicer way of doing this
+
+    try:
+        x, y, z = na.shape
+    except ValueError:
+        return na
+
     return na[:,:,0]
 
 def load_png_stack(impattern, istart, iend):
