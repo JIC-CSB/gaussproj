@@ -1,10 +1,11 @@
 #!/usr/bin/env python2.7
 
-import itertools, sys
+import itertools, sys, os
 import scipy
 import scipy.ndimage as nd
 import numpy as np
 import stackhandle
+import projpp
 
 def numpy_draw_pyplot(r):
     plt.imshow(r, interpolation='nearest')
@@ -73,17 +74,23 @@ def main():
     try:
         stackdir = sys.argv[1]
     except IndexError:
-        print "Usage: %s stack_dir [sdx] [sdy] [sdz]"
+        print "Usage: %s stack_dir [output_dir] [sdx] [sdy] [sdz]" % os.path.basename(sys.argv[0])
         sys.exit(1)
 
     imgpattern, istart, iend = stackhandle.get_stack_pattern(stackdir)
+
+    try:
+        output_dir = sys.argv[2]
+    except IndexError:
+        output_dir = 'output/'
+        print "Using default output directory output/"
 
     #impattern = 'data/pngstack/ExpID3002_spch4_TL003_plantD_lif_S000_T000_C000_Z0%02d.png'
     #istart = 0
     #iend = 92
 
     try:
-        sdx, sdy, sdz = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+        sdx, sdy, sdz = int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])
     except IndexError:
         print "Using default values for standard deviation"
         sdx, sdy, sdz = 8, 8, 6
@@ -98,12 +105,18 @@ def main():
 
     ps = find_projection_surface(bl)
     sps = nd.gaussian_filter(ps, sds)
-    sfilename = "output/surface-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds)
+    sfilename = output_dir + "surface-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds)
     save_numpy_as_png(sfilename, sps)
 
     res = projection_from_surface(ma, sps)
-    filename = "output/proj-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds)
+    filename = output_dir + "proj-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds)
     scipy.misc.imsave(filename, res)
+
+    flush_message("Post processing...")
+    pp = projpp.proj_filter(res, 3, 60, 15)
+    print " done"
+    filename = output_dir + 'proj-pp-%d-%d-%d-%d.png' % (sdx, sdy, sdz, sds)
+    scipy.misc.imsave(filename, pp)
 
     #numpy_draw_pil(res)
 
