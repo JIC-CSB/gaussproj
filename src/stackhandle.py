@@ -21,7 +21,7 @@ def get_stack_pattern(stackdir):
 
     dirlist = os.listdir(stackdir)
 
-    pl = [f for f in dirlist if ispng(f)]
+    pl = sorted([f for f in dirlist if ispng(f)])
 
     imprefix = common(pl[0], pl[-1])
     il = len(imprefix)

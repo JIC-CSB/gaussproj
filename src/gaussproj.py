@@ -21,6 +21,7 @@ def read_and_conv(filename):
 
 def load_png_stack(impattern, istart, iend):
     flush_message("Loading images...")
+    print impattern, istart, iend
     ifiles = [impattern % i for i in range(istart, iend)]
     ma = np.dstack(itertools.imap(read_and_conv, ifiles))
     print " done, array is", ma.shape
