@@ -1,10 +1,6 @@
 #!/usr/bin/env python2.7
 
-#import matplotlib
 import numpy as np
-#import imread
-#import Image
-#from matplotlib import pyplot as plt
 import itertools
 import scipy
 import scipy.ndimage as nd
@@ -20,7 +16,6 @@ def numpy_draw_pil(r):
 
 def read_and_conv(filename):
     na = scipy.misc.imread(filename)
-    #na = imread.imread(filename)
     return na[:,:,0]
 
 def load_png_stack(impattern, istart, iend):
@@ -52,7 +47,6 @@ def find_projection_surface(bl):
         for y in range(0, ymax):
             z = get_max(bl, x, y)
             surface[x, y] = z
-            #res[x, y] = ma[x, y, z]
     print " done"
     return surface
 
