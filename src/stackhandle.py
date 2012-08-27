@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
 
-import os, sys
+import os, sys, re
 
 def ispng(filename):
     fn, ext = os.path.splitext(filename)
@@ -17,11 +17,21 @@ def common(s1, s2):
             s += a
     return s
 
+def sorted_nicely( l ): 
+    """ Sort the given iterable in the way that humans expect.""" 
+    convert = lambda text: int(text) if text.isdigit() else text 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)
+
 def get_stack_pattern(stackdir):
 
     dirlist = os.listdir(stackdir)
 
-    pl = sorted([f for f in dirlist if ispng(f)])
+    pl = sorted_nicely([f for f in dirlist if ispng(f)])
+
+    print pl
+
+    print pl[0], pl[-1]
 
     imprefix = common(pl[0], pl[-1])
     il = len(imprefix)
