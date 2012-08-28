@@ -16,7 +16,12 @@ def numpy_draw_pil(r):
     i.show()
 
 def read_and_conv(filename):
-    na = scipy.misc.imread(filename)
+    try:
+        na = scipy.misc.imread(filename)
+    except IOError, e:
+        print "ERROR: couldn't open %s" % filename
+        print e
+        sys.exit(1)
 
     #TODO - nicer way of doing this
 
@@ -27,10 +32,15 @@ def read_and_conv(filename):
 
     return na[:,:,0]
 
-def load_png_stack(impattern, istart, iend):
+def load_png_stack_pattern(impattern, istart, iend):
     flush_message("Loading images...")
-    print impattern, istart, iend
     ifiles = [impattern % i for i in range(istart, iend)]
+    ma = np.dstack(itertools.imap(read_and_conv, ifiles))
+    print " done, array is", ma.shape
+    return ma
+
+def load_png_stack(ifiles):
+    flush_message("Loading images...")
     ma = np.dstack(itertools.imap(read_and_conv, ifiles))
     print " done, array is", ma.shape
     return ma
@@ -86,7 +96,8 @@ def main():
         print "Usage: %s stack_dir [output_dir] [sdx] [sdy] [sdz]" % os.path.basename(sys.argv[0])
         sys.exit(1)
 
-    imgpattern, istart, iend = stackhandle.get_stack_pattern(stackdir)
+    #imgpattern, istart, iend = stackhandle.get_stack_pattern(stackdir)
+    ifiles = stackhandle.get_stack_files(stackdir)
 
     try:
         output_dir = sys.argv[2]
@@ -108,7 +119,8 @@ def main():
 
     print "Using standard deviations: %d, %d, %d" % (sdx, sdy, sdz)
 
-    ma = load_png_stack(imgpattern, istart, iend)
+    #ma = load_png_stack(imgpattern, istart, iend)
+    ma = load_png_stack(ifiles)
 
     bl = apply_gaussian_filter(ma, [sdx, sdy, sdz])
 

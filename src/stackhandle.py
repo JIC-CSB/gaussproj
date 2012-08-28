@@ -40,7 +40,18 @@ def get_stack_pattern(stackdir):
 
     ld = len(iend)
 
-    return os.path.join(stackdir, imprefix + '%0' + str(ld) + 'd.png'), int(istart), int(iend)
+    #TODO - handle both types
+    #return os.path.join(stackdir, imprefix + '%0' + str(ld) + 'd.png'), int(istart), int(iend)
+    return os.path.join(stackdir, imprefix + '%d.png'), int(istart), int(iend)
+
+def get_stack_files(stackdir):
+    """Return nicely sorted list of PNG files in a directory"""
+
+    dirlist = os.listdir(stackdir)
+
+    pl = sorted_nicely([f for f in dirlist if ispng(f)])
+
+    return [os.path.join(stackdir, f) for f in pl]
 
 def main():
     try:
