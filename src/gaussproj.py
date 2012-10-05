@@ -105,6 +105,8 @@ def main():
         output_dir = 'output/'
         print "Using default output directory output/"
 
+    print "Called with", stackdir, output_dir
+
     #impattern = 'data/pngstack/ExpID3002_spch4_TL003_plantD_lif_S000_T000_C000_Z0%02d.png'
     #istart = 0
     #iend = 92
@@ -126,17 +128,17 @@ def main():
 
     ps = find_projection_surface(bl)
     sps = nd.gaussian_filter(ps, sds)
-    sfilename = output_dir + "surface-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds)
+    sfilename = os.path.join(output_dir, "surface-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds))
     save_numpy_as_png(sfilename, sps)
 
     res = projection_from_surface(ma, sps)
-    filename = output_dir + "proj-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds)
+    filename = os.path.join(output_dir, "proj-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds))
     scipy.misc.imsave(filename, res)
 
     flush_message("Post processing...")
     pp = projpp.proj_filter(res, 3, 60, 15)
     print " done"
-    filename = output_dir + 'proj-pp-%d-%d-%d-%d.png' % (sdx, sdy, sdz, sds)
+    filename = os.path.join(output_dir, 'proj-pp-%d-%d-%d-%d.png' % (sdx, sdy, sdz, sds))
     scipy.misc.imsave(filename, pp)
 
     #numpy_draw_pil(res)

@@ -1,9 +1,9 @@
 TODO: Smarter output file naming
 TODO: Distance measurement
-TODO: Make stack filename handling work with different schemes
 TODO: Improve post-processing
 TODO: Bioformats wurbling
 TODO: Cylindrical projection
 TODO: OMERO integration
 
 DONE: Post-processing
+DONE: Make stack filename handling work with different schemes
