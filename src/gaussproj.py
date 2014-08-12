@@ -30,7 +30,7 @@ def read_and_conv(filename):
     except ValueError:
         return na
 
-    return na[:,:,0]
+    return np.amax(na, 2)
 
 def load_png_stack_pattern(impattern, istart, iend):
     flush_message("Loading images...")
@@ -41,6 +41,7 @@ def load_png_stack_pattern(impattern, istart, iend):
 
 def load_png_stack(ifiles):
     flush_message("Loading images...")
+
     ma = np.dstack(itertools.imap(read_and_conv, ifiles))
     print " done, array is", ma.shape
     return ma
@@ -71,12 +72,13 @@ def find_projection_surface(bl):
     return surface
 
 def vavg(ma, x, y, z):
-    return 0.25 * sum(ma[x, y, z-3:z])
+    return ma[x, y, z-3]
+    #return 0.25 * sum(ma[x, y, z-5:z-1])
 
 def projection_from_surface(ma, surface):
     flush_message("Generating projection from surface...")
     xmax, ymax, zmax = ma.shape
-    res = np.zeros([1024, 1024], dtype=np.uint8)
+    res = np.zeros([xmax, ymax], dtype=np.uint8)
     for x in range(0, xmax):
         for y in range(0, ymax):
             z = surface[x, y]
@@ -117,26 +119,38 @@ def main():
         print "Using default values for standard deviation"
         sdx, sdy, sdz = 8, 8, 6
 
-    sds = 10
+    #sds = 10
+    sds = 5
 
     print "Using standard deviations: %d, %d, %d" % (sdx, sdy, sdz)
 
     #ma = load_png_stack(imgpattern, istart, iend)
     ma = load_png_stack(ifiles)
 
+
+
     bl = apply_gaussian_filter(ma, [sdx, sdy, sdz])
 
-    ps = find_projection_surface(bl)
+    #ps = find_projection_surface(bl)
+    ps = np.argmax(bl, 2)
+
     sps = nd.gaussian_filter(ps, sds)
+    _, _, zmax = ma.shape
+    vis_factor = 255 / zmax
     sfilename = os.path.join(output_dir, "surface-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds))
-    save_numpy_as_png(sfilename, sps)
+    save_numpy_as_png(sfilename, sps * vis_factor)
 
     res = projection_from_surface(ma, sps)
+
     filename = os.path.join(output_dir, "proj-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds))
-    scipy.misc.imsave(filename, res)
+    pmax = np.amax(res)
+
+    vis_scale = 255 / pmax
+
+    scipy.misc.imsave(filename, res * vis_scale)
 
     flush_message("Post processing...")
-    pp = projpp.proj_filter(res, 3, 60, 15)
+    pp = projpp.proj_filter(res * vis_scale, 3, 60, 15)
     print " done"
     filename = os.path.join(output_dir, 'proj-pp-%d-%d-%d-%d.png' % (sdx, sdy, sdz, sds))
     scipy.misc.imsave(filename, pp)
