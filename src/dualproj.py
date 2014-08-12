@@ -72,6 +72,9 @@ def find_projection_surface(bl):
     return surface
 
 def vavg(ma, x, y, z):
+    # This function controls which voxels relative to the surface are taken as
+    # part of the projection
+
     #return ma[x, y, z-4]
     return 0.25 * sum(ma[x, y, z-5:z-1])
 
@@ -91,6 +94,8 @@ def save_numpy_as_png(filename, np):
     scipy.misc.imsave(filename, np)
 
 def main():
+    """Generate a Gaussian blurred maximal intensity projection from a directory
+    containing a stack of image files"""
 
     try:
         stackdir = sys.argv[1]
@@ -111,17 +116,13 @@ def main():
 
     print "Called with", stackdir, output_dir
 
-    #impattern = 'data/pngstack/ExpID3002_spch4_TL003_plantD_lif_S000_T000_C000_Z0%02d.png'
-    #istart = 0
-    #iend = 92
-
     try:
         sdx, sdy, sdz = int(sys.argv[4]), int(sys.argv[5]), int(sys.argv[6])
     except IndexError:
         print "Using default values for standard deviation"
         sdx, sdy, sdz = 8, 8, 6
 
-    #sds = 10
+    # Gaussian blur applied to surface after projection is taken
     sds = 5
 
     print "Using standard deviations: %d, %d, %d" % (sdx, sdy, sdz)
@@ -129,8 +130,6 @@ def main():
     #ma = load_png_stack(imgpattern, istart, iend)
     ma = load_png_stack(ifiles)
     ma2 = load_png_stack(ifiles2)
-
-
 
     bl = apply_gaussian_filter(ma, [sdx, sdy, sdz])
 
