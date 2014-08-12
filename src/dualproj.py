@@ -125,34 +125,43 @@ def main():
     # Gaussian blur applied to surface after projection is taken
     sds = 5
 
-    print "Using standard deviations: %d, %d, %d" % (sdx, sdy, sdz)
+    print "Using standard deviations: (%d, %d, %d), %d" % (sdx, sdy, sdz, sds)
 
-    #ma = load_png_stack(imgpattern, istart, iend)
+    # Load the two images from their stack representations
     ma = load_png_stack(ifiles)
     ma2 = load_png_stack(ifiles2)
 
+    # Apply the initial Gaussian blur in 3D to the first stack (which we will
+    # use to generate the surface)
     bl = apply_gaussian_filter(ma, [sdx, sdy, sdz])
 
-    #ps = find_projection_surface(bl)
+    # Calculate the projection surface using numpy's function for finding the
+    # max of an array along a particular axis
     ps = np.argmax(bl, 2)
 
+    # Apply the blur to the resultant surface and save the result
     sps = nd.gaussian_filter(ps, sds)
     _, _, zmax = ma.shape
     vis_factor = 255 / zmax
     sfilename = os.path.join(output_dir, "surface-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds))
     save_numpy_as_png(sfilename, sps * vis_factor)
 
-    res = projection_from_surface(ma2, sps)
-
-    filename = os.path.join(output_dir, "proj-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds))
-    pmax = np.amax(res)
-
+    # Calculate the projection of the first image using the generated surface
+    # and save the result, scaling intensities after taking the projection
+    res1 = projection_from_surface(ma, sps)
+    filename = os.path.join(output_dir, "proj-1-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds))
+    pmax = np.amax(res1)
     vis_scale = 255 / pmax
+    scipy.misc.imsave(filename, res1 * vis_scale)
 
-    scipy.misc.imsave(filename, res * vis_scale)
+    res2 = projection_from_surface(ma2, sps)
+    filename = os.path.join(output_dir, "proj-2-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds))
+    pmax = np.amax(res2)
+    vis_scale = 255 / pmax
+    scipy.misc.imsave(filename, res1 * vis_scale)
 
     flush_message("Post processing...")
-    pp = projpp.proj_filter(res * vis_scale, 3, 60, 15)
+    pp = projpp.proj_filter(res1 * vis_scale, 3, 60, 15)
     print " done"
     filename = os.path.join(output_dir, 'proj-pp-%d-%d-%d-%d.png' % (sdx, sdy, sdz, sds))
     scipy.misc.imsave(filename, pp)
