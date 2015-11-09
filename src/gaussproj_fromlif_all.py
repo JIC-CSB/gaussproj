@@ -67,8 +67,14 @@ def main(args):
 	try:
 		lifdir = sys.argv[1]
 	except IndexError:
-		print "Usage: %s lif_directory " % os.path.basename(sys.argv[0])
+		print "Usage: %s lif_directory [sdx] [sdy] [sdz]" % os.path.basename(sys.argv[0])
 		sys.exit(1)
+		
+	try:
+        sdx, sdy, sdz = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+    except IndexError:
+        print "Using default values for standard deviation"
+        sdx, sdy, sdz = 4, 4, 3
 		
 	md = bf.get_omexml_metadata(lifdir)
 	mdo = bf.OMEXML(md)	
@@ -101,7 +107,7 @@ def main(args):
 		#ma = greyScale(image3d)
 		ma = np.amax(image3d, 3)
 		
-		sdx, sdy, sdz = 4, 4, 3
+		#sdx, sdy, sdz = 4, 4, 3
 		sds = 4
 	
 		output_dir = "./proj_%s_%s" % (lifdir, im_num)
