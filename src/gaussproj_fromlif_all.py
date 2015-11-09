@@ -1,28 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-#  gaussproj_fromlif.py
-#  
-#  Copyright 2015 Ross Carter (JIC) <carterr@n108308.nbi.ac.uk>
-#  
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#  
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#  MA 02110-1301, USA.
-#  
-#
-
-
 """
 Does exactly the same as Gaussproj but takes a lif file as input
 and projects all images in stack
@@ -77,39 +52,6 @@ def parse_xml_metadata(xml_string, array_order='zyx'):
                     sizes.append(tuple([int(att[t]) for t in size_tags]))
                     resolutions.append(tuple([float(att[t]) for t in res_tags]))
     return names, sizes, resolutions
-
-def vis2d(ma, sps, indices, axis=1, d=-3, aspect=1, threshold=10):
-    N = len(indices)
-    if axis==1:
-        plt.figure(figsize=(2*N, 15))
-    else:
-        plt.figure(figsize=(12, 2*N))
-    N = len(indices)
-    for i, idx in enumerate(indices):
-        s = np.take(ma, idx, axis)
-        h = np.take(sps, idx, axis)
-        if axis==1:
-            plt.subplot(1, N, i+1)
-            plt.imshow(np.minimum(threshold, s), cmap=plt.cm.gray, aspect=1.0/aspect)
-            plt.hold(True)
-            plt.plot(h, range(ma.shape[0]), 'r')
-            plt.plot(np.clip(h+d, 0, ma.shape[2]-1), range(ma.shape[0]), 'g')
-            plt.ylim(0, ma.shape[0])
-            plt.xlim(0, ma.shape[2])
-            plt.xticks([])
-            if i>0:
-                plt.yticks([])
-        else:
-            plt.subplot(N, 1, i+1)
-            plt.imshow(np.minimum(threshold, s.T), cmap=plt.cm.gray, aspect=aspect)
-            plt.hold(True)
-            plt.plot(range(ma.shape[1]), h, 'r')
-            plt.plot(range(ma.shape[1]), np.clip(h+d, 0, ma.shape[2]-1), 'g')
-            plt.xlim(0, ma.shape[1])
-            plt.ylim(ma.shape[2], 0)
-            plt.yticks([])
-            if i>0:
-                plt.xticks([])
 
 def greyScale(image):
 	""" Converts RGB to greyscale as Y = 0.299R + 0.587G + 0.144B """
