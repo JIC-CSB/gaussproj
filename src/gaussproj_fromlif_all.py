@@ -14,7 +14,8 @@ import bioformats as bf
 from pylab import imshow, show
 from xml import etree as et
 import matplotlib.pyplot as plt
-from gaussproj import *
+from gaussproj import flush_message
+import proj
  
 
 def parse_xml_metadata(xml_string, array_order='zyx'):
@@ -71,10 +72,10 @@ def main(args):
 		sys.exit(1)
 		
 	try:
-        sdx, sdy, sdz = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
-    except IndexError:
-        print "Using default values for standard deviation"
-        sdx, sdy, sdz = 4, 4, 3
+            sdx, sdy, sdz = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+        except IndexError:
+            print "Using default values for standard deviation"
+            sdx, sdy, sdz = 4, 4, 3
 		
 	md = bf.get_omexml_metadata(lifdir)
 	mdo = bf.OMEXML(md)	
@@ -118,20 +119,20 @@ def main(args):
 		max_proj = np.amax(ma, axis=2)
 		
 		mpfilename = os.path.join(output_dir, "max-proj.png")
-		save_numpy_as_png(mpfilename, max_proj)
+		scipy.misc.imsave(mpfilename, max_proj)
 		
-		bl = apply_gaussian_filter(ma, [sdx, sdy, sdz])
+		bl = nd.gaussian_filter(ma, [sdx, sdy, sdz])
 
 		#ps = find_projection_surface(bl)
-		ps = np.argmax(bl, 2)
+		ps = proj.max_indices_z(bl)
 
 		sps = nd.gaussian_filter(ps, sds)
 		
 		vis_factor = 255 / z_size
 		sfilename = os.path.join(output_dir, "surface-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds))
-		save_numpy_as_png(sfilename, sps * vis_factor)
+		scipy.misc.imsave(sfilename, sps * vis_factor)
 
-		res = projection_from_surface(ma, sps)
+		res = proj.projection_from_surface(ma, sps, dm=3, dp=0)
 
 		filename = os.path.join(output_dir, "proj-g3d-%d-%d-%d-%d.png" % (sdx, sdy, sdz, sds))
 		pmax = np.amax(res)
